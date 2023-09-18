@@ -1,0 +1,70 @@
+/* Custom animations for weather icons */
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fall {
+  0%, 100% {
+    transform: translateY(0) translateX(-50%);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(8px) translateX(-50%);
+    opacity: 0.5;
+  }
+}
+
+@keyframes flash {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-fall {
+  animation: fall 1.5s ease-in-out infinite;
+}
+
+.animate-flash {
+  animation: flash 0.5s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Temperature transition */
+.temp-transition {
+  transition: all 0.3s ease-out;
+}
+
+/* Card hover effects */
+.weather-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.weather-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}

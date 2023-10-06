@@ -1,78 +1,85 @@
-export interface WeatherCondition {
-  id: number;
-  main: string;
-  description: string;
-  icon: string;
+export type WeatherCondition =
+  | 'clear'
+  | 'partly-cloudy'
+  | 'cloudy'
+  | 'overcast'
+  | 'rain'
+  | 'heavy-rain'
+  | 'thunderstorm'
+  | 'snow'
+  | 'sleet'
+  | 'fog'
+  | 'wind'
+  | 'hail';
+
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  country: string;
+  coordinates: Coordinates;
+  timezone: string;
 }
 
 export interface CurrentWeather {
-  location: {
-    name: string;
-    country: string;
-    lat: number;
-    lon: number;
-  };
-  temperature: {
-    current: number;
-    feelsLike: number;
-    min: number;
-    max: number;
-  };
-  humidity: number;
-  pressure: number;
-  windSpeed: number;
-  windDirection: number;
-  visibility: number;
-  clouds: number;
-  condition: WeatherCondition;
-  sunrise: number;
-  sunset: number;
-  timezone: number;
-  lastUpdated: number;
-}
-
-export interface HourlyForecast {
-  timestamp: number;
   temperature: number;
   feelsLike: number;
   humidity: number;
+  windSpeed: number;
+  windDirection: number;
+  condition: WeatherCondition;
+  description: string;
+  uvIndex: number;
+  visibility: number;
+  pressure: number;
+  updatedAt: Date;
+}
+
+export interface HourlyForecast {
+  time: Date;
+  temperature: number;
   condition: WeatherCondition;
   precipitationProbability: number;
-  windSpeed: number;
+  precipitationType?: 'rain' | 'snow' | 'sleet' | 'none';
+  precipitationAmount?: number;
+  humidity: number;
+  windSpeed?: number;
+  windDirection?: number;
 }
 
 export interface DailyForecast {
-  date: number;
-  temperature: {
-    min: number;
-    max: number;
-    day: number;
-    night: number;
-  };
+  date: Date;
+  temperatureHigh: number;
+  temperatureLow: number;
   condition: WeatherCondition;
+  description: string;
   precipitationProbability: number;
+  precipitationType?: 'rain' | 'snow' | 'sleet' | 'none';
+  sunrise: Date;
+  sunset: Date;
+  uvIndex: number;
   humidity: number;
   windSpeed: number;
-  sunrise: number;
-  sunset: number;
+  hourly?: HourlyForecast[];
 }
 
-export interface ForecastData {
-  location: {
-    name: string;
-    country: string;
-    lat: number;
-    lon: number;
-  };
+export interface WeatherData {
+  location: Location;
+  current: CurrentWeather;
   hourly: HourlyForecast[];
   daily: DailyForecast[];
 }
 
-export interface SavedLocation {
-  id: string;
-  name: string;
-  country: string;
-  lat: number;
-  lon: number;
-  isPrimary: boolean;
+export interface WeatherError {
+  code: string;
+  message: string;
+}
+
+export interface BookmarkedLocation extends Location {
+  addedAt: Date;
+  nickname?: string;
 }

@@ -1,97 +1,127 @@
-export function formatTemperature(temp: number, unit: 'celsius' | 'fahrenheit' = 'celsius'): string {
-  if (unit === 'fahrenheit') {
-    return `${Math.round(temp * 9/5 + 32)}°F`;
+export const formatTemperature = (
+  temp: number | null | undefined,
+  unit: 'celsius' | 'fahrenheit' = 'celsius'
+): string => {
+  if (temp === null || temp === undefined || isNaN(temp)) {
+    return '--°';
   }
-  return `${Math.round(temp)}°C`;
-}
 
-export function formatWindSpeed(speed: number, unit: 'kmh' | 'mph' | 'ms' = 'kmh'): string {
-  switch (unit) {
-    case 'mph':
-      return `${Math.round(speed * 0.621371)} mph`;
-    case 'ms':
-      return `${(speed / 3.6).toFixed(1)} m/s`;
-    default:
-      return `${Math.round(speed)} km/h`;
+  const roundedTemp = Math.round(temp);
+  const symbol = unit === 'celsius' ? '°C' : '°F';
+  return `${roundedTemp}${symbol}`;
+};
+
+export const convertTemperature = (
+  temp: number | null | undefined,
+  fromUnit: 'celsius' | 'fahrenheit',
+  toUnit: 'celsius' | 'fahrenheit'
+): number | null => {
+  if (temp === null || temp === undefined || isNaN(temp)) {
+    return null;
   }
-}
 
-export function formatTime(isoString: string, format: '12h' | '24h' = '24h'): string {
-  const date = new Date(isoString);
-  
-  if (format === '12h') {
-    return date.toLocaleTimeString('en-US', {
+  if (fromUnit === toUnit) {
+    return temp;
+  }
+
+  if (fromUnit === 'celsius' && toUnit === 'fahrenheit') {
+    return (temp * 9) / 5 + 32;
+  }
+
+  return ((temp - 32) * 5) / 9;
+};
+
+export const formatTime = (date: Date | string | null | undefined): string => {
+  if (!date) {
+    return '--:--';
+  }
+
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    if (isNaN(dateObj.getTime())) {
+      return '--:--';
+    }
+
+    return dateObj.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     });
+  } catch {
+    return '--:--';
   }
-  
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-}
+};
 
-export function formatDate(dateString: string, format: 'short' | 'long' | 'weekday' = 'short'): string {
-  const date = new Date(dateString);
-  
-  switch (format) {
-    case 'long':
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-      });
-    case 'weekday':
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
-    default:
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      });
+export const formatDate = (date: Date | string | null | undefined): string => {
+  if (!date) {
+    return '--';
   }
-}
 
-export function formatPercentage(value: number): string {
-  return `${Math.round(Math.min(100, Math.max(0, value)))}%`;
-}
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    if (isNaN(dateObj.getTime())) {
+      return '--';
+    }
 
-export function formatVisibility(km: number): string {
-  if (km >= 10) {
-    return 'Excellent';
-  } else if (km >= 5) {
-    return `${km} km (Good)`;
-  } else if (km >= 2) {
-    return `${km} km (Moderate)`;
-  } else {
-    return `${km} km (Poor)`;
+    return dateObj.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return '--';
   }
-}
+};
 
-export function formatPressure(hPa: number): string {
-  return `${hPa} hPa`;
-}
+export const formatDayName = (date: Date | string | null | undefined): string => {
+  if (!date) {
+    return '--';
+  }
 
-export function getWindDirection(degrees: number): string {
-  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-  const index = Math.round(degrees / 22.5) % 16;
-  return directions[index];
-}
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    if (isNaN(dateObj.getTime())) {
+      return '--';
+    }
 
-export function getRelativeTime(isoString: string): string {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} min ago`;
-  
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
-}
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (dateObj.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+
+    if (dateObj.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    }
+
+    return dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+  } catch {
+    return '--';
+  }
+};
+
+export const formatPercentage = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return '--%';
+  }
+  return `${Math.round(Math.max(0, Math.min(100, value)))}%`;
+};
+
+export const formatWindSpeed = (
+  speed: number | null | undefined,
+  unit: 'mph' | 'kmh' = 'mph'
+): string => {
+  if (speed === null || speed === undefined || isNaN(speed)) {
+    return '-- ' + unit;
+  }
+  return `${Math.round(speed)} ${unit}`;
+};
+
+export const formatHumidity = (humidity: number | null | undefined): string => {
+  return formatPercentage(humidity);
+};

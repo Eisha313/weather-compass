@@ -1,45 +1,50 @@
 import React from 'react';
-import { useWeatherContext } from '../context/WeatherContext';
+import { formatTemperature, convertTemperature } from '../utils/formatters';
 
 interface TemperatureProps {
-  value: number;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  value: number | null | undefined;
+  unit?: 'celsius' | 'fahrenheit';
+  displayUnit?: 'celsius' | 'fahrenheit';
+  size?: 'small' | 'medium' | 'large';
   showUnit?: boolean;
   className?: string;
 }
 
 const sizeClasses = {
-  sm: 'text-sm',
-  md: 'text-base',
-  lg: 'text-2xl',
-  xl: 'text-5xl font-bold',
+  small: 'text-sm',
+  medium: 'text-xl',
+  large: 'text-5xl font-bold',
 };
 
 export const Temperature: React.FC<TemperatureProps> = ({
   value,
-  size = 'md',
+  unit = 'celsius',
+  displayUnit,
+  size = 'medium',
   showUnit = true,
   className = '',
 }) => {
-  const { temperatureUnit, toggleTemperatureUnit } = useWeatherContext();
+  const targetUnit = displayUnit || unit;
+  
+  // Convert temperature if needed
+  const displayValue = unit !== targetUnit
+    ? convertTemperature(value, unit, targetUnit)
+    : value;
 
-  const convertedValue = React.useMemo(() => {
-    if (temperatureUnit === 'fahrenheit') {
-      return Math.round((value * 9) / 5 + 32);
-    }
-    return Math.round(value);
-  }, [value, temperatureUnit]);
+  const formattedTemp = showUnit
+    ? formatTemperature(displayValue, targetUnit)
+    : displayValue !== null && displayValue !== undefined && !isNaN(displayValue)
+      ? `${Math.round(displayValue)}°`
+      : '--°';
 
-  const unitSymbol = temperatureUnit === 'celsius' ? '°C' : '°F';
+  const isValidTemp = value !== null && value !== undefined && !isNaN(value);
 
   return (
-    <span
-      className={`${sizeClasses[size]} ${className} cursor-pointer hover:opacity-80 transition-opacity`}
-      onClick={toggleTemperatureUnit}
-      title="Click to toggle unit"
+    <span 
+      className={`${sizeClasses[size]} ${className} ${!isValidTemp ? 'text-gray-400' : ''}`}
+      aria-label={isValidTemp ? `Temperature: ${formattedTemp}` : 'Temperature unavailable'}
     >
-      {convertedValue}
-      {showUnit && <span className="text-[0.6em] ml-0.5">{unitSymbol}</span>}
+      {formattedTemp}
     </span>
   );
 };

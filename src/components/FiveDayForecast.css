@@ -1,0 +1,98 @@
+.five-day-forecast {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.five-day-forecast--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.five-day-forecast__header {
+  margin-bottom: 1.5rem;
+}
+
+.five-day-forecast__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 0.25rem 0;
+}
+
+.five-day-forecast__subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.five-day-forecast__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .five-day-forecast__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .five-day-forecast__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .five-day-forecast__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.five-day-forecast__item {
+  cursor: pointer;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.five-day-forecast__item:hover {
+  transform: translateY(-4px);
+}
+
+.five-day-forecast__item:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+.five-day-forecast__item--selected {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.five-day-forecast__item--selected:hover {
+  transform: translateY(-4px);
+}
+
+/* Condition-based background tints */
+.five-day-forecast[data-overall-condition="clear"] {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.five-day-forecast[data-overall-condition="rain"],
+.five-day-forecast[data-overall-condition="drizzle"] {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.five-day-forecast[data-overall-condition="snow"] {
+  background: linear-gradient(135deg, rgba(226, 232, 240, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.five-day-forecast[data-overall-condition="thunderstorm"] {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+}

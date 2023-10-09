@@ -1,35 +1,43 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { DailyForecast } from '../types/weather';
 import ForecastCard from './ForecastCard';
+import { getForecastSummary, getDominantCondition } from '../utils/forecastUtils';
 import './FiveDayForecast.css';
 
 interface FiveDayForecastProps {
   forecasts: DailyForecast[];
-  onDaySelect?: (forecast: DailyForecast) => void;
+  onDaySelect?: (date: Date) => void;
+  selectedDate?: Date;
+  temperatureUnit?: 'celsius' | 'fahrenheit';
 }
 
 const FiveDayForecast: React.FC<FiveDayForecastProps> = ({
   forecasts,
   onDaySelect,
+  selectedDate,
+  temperatureUnit = 'celsius',
 }) => {
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const processedForecasts = useMemo(() => {
+    return forecasts.slice(0, 5).map(forecast => ({
+      ...forecast,
+      summary: getForecastSummary(forecast),
+      isSelected: selectedDate?.toDateString() === forecast.date.toDateString(),
+    }));
+  }, [forecasts, selectedDate]);
 
-  const handleDayClick = (index: number, forecast: DailyForecast) => {
-    setSelectedIndex(index);
-    onDaySelect?.(forecast);
+  const overallCondition = useMemo(() => {
+    const conditions = forecasts.map(f => f.condition);
+    return getDominantCondition(conditions);
+  }, [forecasts]);
+
+  const handleKeyDown = (e: React.KeyboardEvent, date: Date) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onDaySelect?.(date);
+    }
   };
 
-  const isToday = (date: string): boolean => {
-    const today = new Date();
-    const forecastDate = new Date(date);
-    return (
-      today.getDate() === forecastDate.getDate() &&
-      today.getMonth() === forecastDate.getMonth() &&
-      today.getFullYear() === forecastDate.getFullYear()
-    );
-  };
-
-  if (!forecasts || forecasts.length === 0) {
+  if (forecasts.length === 0) {
     return (
       <div className="five-day-forecast five-day-forecast--empty">
         <p>No forecast data available</p>
@@ -38,47 +46,43 @@ const FiveDayForecast: React.FC<FiveDayForecastProps> = ({
   }
 
   return (
-    <section className="five-day-forecast">
-      <div className="five-day-forecast__header">
+    <section 
+      className="five-day-forecast" 
+      aria-label="5-day weather forecast"
+      data-overall-condition={overallCondition}
+    >
+      <header className="five-day-forecast__header">
         <h2 className="five-day-forecast__title">5-Day Forecast</h2>
         <p className="five-day-forecast__subtitle">
-          Click a day for hourly details
+          Overall outlook: {overallCondition.replace('-', ' ')}
         </p>
-      </div>
-
-      <div className="five-day-forecast__grid">
-        {forecasts.slice(0, 5).map((forecast, index) => (
-          <ForecastCard
-            key={forecast.date}
-            forecast={forecast}
-            isToday={isToday(forecast.date)}
-            isSelected={selectedIndex === index}
-            onClick={() => handleDayClick(index, forecast)}
-          />
+      </header>
+      
+      <div className="five-day-forecast__grid" role="list">
+        {processedForecasts.map((forecast, index) => (
+          <div
+            key={forecast.date.toISOString()}
+            role="listitem"
+            tabIndex={onDaySelect ? 0 : undefined}
+            onClick={() => onDaySelect?.(forecast.date)}
+            onKeyDown={(e) => handleKeyDown(e, forecast.date)}
+            className={`five-day-forecast__item ${
+              forecast.isSelected ? 'five-day-forecast__item--selected' : ''
+            }`}
+            aria-label={forecast.summary}
+          >
+            <ForecastCard
+              date={forecast.date}
+              condition={forecast.condition}
+              high={forecast.high}
+              low={forecast.low}
+              precipitationProbability={forecast.precipitationProbability}
+              temperatureUnit={temperatureUnit}
+              isToday={index === 0}
+            />
+          </div>
         ))}
       </div>
-
-      {forecasts[selectedIndex] && (
-        <div className="five-day-forecast__summary">
-          <h3 className="five-day-forecast__summary-title">
-            {isToday(forecasts[selectedIndex].date)
-              ? "Today's Summary"
-              : `${new Date(forecasts[selectedIndex].date).toLocaleDateString('en-US', { weekday: 'long' })}'s Summary`}
-          </h3>
-          <p className="five-day-forecast__summary-text">
-            Expect {forecasts[selectedIndex].condition.toLowerCase()} conditions
-            with temperatures between{' '}
-            <strong>{forecasts[selectedIndex].low}°</strong> and{' '}
-            <strong>{forecasts[selectedIndex].high}°</strong>.
-            {forecasts[selectedIndex].precipitation > 30 && (
-              <span>
-                {' '}There's a {forecasts[selectedIndex].precipitation}% chance
-                of precipitation.
-              </span>
-            )}
-          </p>
-        </div>
-      )}
     </section>
   );
 };

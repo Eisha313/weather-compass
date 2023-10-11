@@ -1,57 +1,77 @@
 import React from 'react';
 import { HourlyForecast as HourlyForecastType } from '../types/weather';
-import { WeatherIcon } from './WeatherIcon';
-import { Temperature } from './Temperature';
-import { formatHour, formatPercent } from '../utils/formatters';
+import { formatTemperature, formatPercentage, formatTime } from '../utils/formatters';
+import WeatherIcon from './WeatherIcon';
 import './HourlyForecast.css';
 
 interface HourlyForecastProps {
-  hourlyData: HourlyForecastType[];
-  maxHours?: number;
+  forecasts: HourlyForecastType[];
+  timezoneOffset?: number;
+  temperatureUnit?: 'celsius' | 'fahrenheit';
+  maxItems?: number;
 }
 
-export const HourlyForecast: React.FC<HourlyForecastProps> = ({
-  hourlyData,
-  maxHours = 24
+const HourlyForecast: React.FC<HourlyForecastProps> = ({
+  forecasts,
+  timezoneOffset = 0,
+  temperatureUnit = 'celsius',
+  maxItems = 24
 }) => {
-  const displayedHours = hourlyData.slice(0, maxHours);
+  // Filter to show only future hours and limit items
+  const now = Math.floor(Date.now() / 1000);
+  const futureForecasts = forecasts
+    .filter(f => f.dt > now)
+    .slice(0, maxItems);
 
-  const getPrecipitationColor = (probability: number): string => {
-    if (probability >= 70) return 'precipitation-high';
-    if (probability >= 40) return 'precipitation-medium';
-    if (probability > 0) return 'precipitation-low';
-    return 'precipitation-none';
-  };
+  if (futureForecasts.length === 0) {
+    return (
+      <div className="hourly-forecast hourly-forecast--empty">
+        <p>No hourly forecast data available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="hourly-forecast">
       <h3 className="hourly-forecast__title">Hourly Forecast</h3>
       <div className="hourly-forecast__scroll-container">
         <div className="hourly-forecast__list">
-          {displayedHours.map((hour, index) => (
-            <div key={`${hour.time}-${index}`} className="hourly-forecast__item">
+          {futureForecasts.map((hour, index) => (
+            <div
+              key={hour.dt}
+              className="hourly-forecast__item"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <span className="hourly-forecast__time">
-                {index === 0 ? 'Now' : formatHour(hour.time)}
+                {index === 0 ? 'Now' : formatTime(hour.dt, timezoneOffset)}
               </span>
+              
               <div className="hourly-forecast__icon">
-                <WeatherIcon condition={hour.condition} size="small" />
+                <WeatherIcon
+                  condition={hour.condition}
+                  size="small"
+                  animated={index === 0}
+                />
               </div>
-              <Temperature value={hour.temperature} size="small" />
-              <div className={`hourly-forecast__precipitation ${getPrecipitationColor(hour.precipitationProbability)}`}>
-                <svg
-                  className="hourly-forecast__precip-icon"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  width="12"
-                  height="12"
-                >
-                  <path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z" />
-                </svg>
-                <span>{formatPercent(hour.precipitationProbability)}</span>
-              </div>
-              {hour.windSpeed !== undefined && (
-                <div className="hourly-forecast__wind">
-                  <span>{Math.round(hour.windSpeed)} mph</span>
+              
+              <span className="hourly-forecast__temp">
+                {formatTemperature(hour.temperature, temperatureUnit, false)}°
+              </span>
+              
+              {hour.precipitationProbability > 0 && (
+                <div className="hourly-forecast__precip">
+                  <svg
+                    className="hourly-forecast__precip-icon"
+                    viewBox="0 0 24 24"
+                    width="12"
+                    height="12"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z"
+                    />
+                  </svg>
+                  <span>{formatPercentage(hour.precipitationProbability)}</span>
                 </div>
               )}
             </div>

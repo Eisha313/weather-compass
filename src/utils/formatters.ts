@@ -1,127 +1,155 @@
-export const formatTemperature = (
-  temp: number | null | undefined,
-  unit: 'celsius' | 'fahrenheit' = 'celsius'
-): string => {
-  if (temp === null || temp === undefined || isNaN(temp)) {
-    return '--°';
-  }
+/**
+ * Formatting utilities for weather data display
+ */
 
-  const roundedTemp = Math.round(temp);
+import { formatLocalTime, convertToLocalTime } from './timezone';
+
+export type TemperatureUnit = 'celsius' | 'fahrenheit';
+
+/**
+ * Convert temperature between units
+ * API returns Kelvin by default, but we request metric (Celsius)
+ */
+export function convertTemperature(celsius: number, to: TemperatureUnit): number {
+  if (to === 'fahrenheit') {
+    // Fixed: Use correct formula C * 9/5 + 32
+    return (celsius * 9) / 5 + 32;
+  }
+  return celsius;
+}
+
+/**
+ * Format temperature for display with unit symbol
+ */
+export function formatTemperature(
+  value: number,
+  unit: TemperatureUnit = 'celsius',
+  showUnit = true
+): string {
+  const converted = convertTemperature(value, unit);
+  const rounded = Math.round(converted);
+  
+  if (!showUnit) {
+    return `${rounded}`;
+  }
+  
   const symbol = unit === 'celsius' ? '°C' : '°F';
-  return `${roundedTemp}${symbol}`;
-};
+  return `${rounded}${symbol}`;
+}
 
-export const convertTemperature = (
-  temp: number | null | undefined,
-  fromUnit: 'celsius' | 'fahrenheit',
-  toUnit: 'celsius' | 'fahrenheit'
-): number | null => {
-  if (temp === null || temp === undefined || isNaN(temp)) {
-    return null;
+/**
+ * Format percentage values
+ */
+export function formatPercentage(value: number): string {
+  return `${Math.round(value)}%`;
+}
+
+/**
+ * Format wind speed with unit
+ */
+export function formatWindSpeed(metersPerSecond: number, useImperial = false): string {
+  if (useImperial) {
+    const mph = metersPerSecond * 2.237;
+    return `${Math.round(mph)} mph`;
   }
+  return `${Math.round(metersPerSecond)} m/s`;
+}
 
-  if (fromUnit === toUnit) {
-    return temp;
+/**
+ * Format visibility distance
+ */
+export function formatVisibility(meters: number, useImperial = false): string {
+  if (useImperial) {
+    const miles = meters / 1609.34;
+    return miles >= 1 ? `${miles.toFixed(1)} mi` : `${Math.round(meters * 3.281)} ft`;
   }
+  return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${meters} m`;
+}
 
-  if (fromUnit === 'celsius' && toUnit === 'fahrenheit') {
-    return (temp * 9) / 5 + 32;
+/**
+ * Format pressure with unit
+ */
+export function formatPressure(hPa: number): string {
+  return `${hPa} hPa`;
+}
+
+/**
+ * Format UV index with description
+ */
+export function formatUVIndex(uvi: number): { value: string; level: string } {
+  let level: string;
+  
+  if (uvi <= 2) {
+    level = 'Low';
+  } else if (uvi <= 5) {
+    level = 'Moderate';
+  } else if (uvi <= 7) {
+    level = 'High';
+  } else if (uvi <= 10) {
+    level = 'Very High';
+  } else {
+    level = 'Extreme';
   }
+  
+  return {
+    value: uvi.toFixed(1),
+    level
+  };
+}
 
-  return ((temp - 32) * 5) / 9;
-};
+/**
+ * Format time for display - timezone aware
+ */
+export function formatTime(
+  timestamp: number,
+  timezoneOffset: number = 0,
+  use24Hour = false
+): string {
+  return formatLocalTime(timestamp, timezoneOffset, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: !use24Hour
+  });
+}
 
-export const formatTime = (date: Date | string | null | undefined): string => {
-  if (!date) {
-    return '--:--';
+/**
+ * Format date for display - timezone aware
+ */
+export function formatDate(
+  timestamp: number,
+  timezoneOffset: number = 0,
+  options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' }
+): string {
+  const localDate = convertToLocalTime(timestamp, timezoneOffset);
+  return localDate.toLocaleDateString('en-US', {
+    ...options,
+    timeZone: 'UTC'
+  });
+}
+
+/**
+ * Get relative time description (e.g., "2 hours ago", "in 3 hours")
+ */
+export function getRelativeTime(timestamp: number): string {
+  const now = Date.now();
+  const diff = timestamp * 1000 - now;
+  const absDiff = Math.abs(diff);
+  
+  const minutes = Math.floor(absDiff / 60000);
+  const hours = Math.floor(absDiff / 3600000);
+  const days = Math.floor(absDiff / 86400000);
+  
+  const isFuture = diff > 0;
+  const prefix = isFuture ? 'in ' : '';
+  const suffix = isFuture ? '' : ' ago';
+  
+  if (minutes < 1) {
+    return 'just now';
+  } else if (minutes < 60) {
+    return `${prefix}${minutes} min${suffix}`;
+  } else if (hours < 24) {
+    return `${prefix}${hours} hr${hours > 1 ? 's' : ''}${suffix}`;
+  } else {
+    return `${prefix}${days} day${days > 1 ? 's' : ''}${suffix}`;
   }
-
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    
-    if (isNaN(dateObj.getTime())) {
-      return '--:--';
-    }
-
-    return dateObj.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  } catch {
-    return '--:--';
-  }
-};
-
-export const formatDate = (date: Date | string | null | undefined): string => {
-  if (!date) {
-    return '--';
-  }
-
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    
-    if (isNaN(dateObj.getTime())) {
-      return '--';
-    }
-
-    return dateObj.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return '--';
-  }
-};
-
-export const formatDayName = (date: Date | string | null | undefined): string => {
-  if (!date) {
-    return '--';
-  }
-
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    
-    if (isNaN(dateObj.getTime())) {
-      return '--';
-    }
-
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    if (dateObj.toDateString() === today.toDateString()) {
-      return 'Today';
-    }
-
-    if (dateObj.toDateString() === tomorrow.toDateString()) {
-      return 'Tomorrow';
-    }
-
-    return dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-  } catch {
-    return '--';
-  }
-};
-
-export const formatPercentage = (value: number | null | undefined): string => {
-  if (value === null || value === undefined || isNaN(value)) {
-    return '--%';
-  }
-  return `${Math.round(Math.max(0, Math.min(100, value)))}%`;
-};
-
-export const formatWindSpeed = (
-  speed: number | null | undefined,
-  unit: 'mph' | 'kmh' = 'mph'
-): string => {
-  if (speed === null || speed === undefined || isNaN(speed)) {
-    return '-- ' + unit;
-  }
-  return `${Math.round(speed)} ${unit}`;
-};
-
-export const formatHumidity = (humidity: number | null | undefined): string => {
-  return formatPercentage(humidity);
-};
+}

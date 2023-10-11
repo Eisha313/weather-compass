@@ -1,15 +1,35 @@
-# Weather Compass
+# Weather Compass 🧭
 
-A sleek weather dashboard providing current conditions, 5-day forecasts, and location-based insights with outfit recommendations.
+A sleek weather dashboard showing current conditions and forecasts with location-based insights.
+
+![Weather Compass Screenshot](docs/screenshot.png)
 
 ## Features
 
-- 🌡️ Real-time weather display with animated icons
-- 📅 5-day forecast with hourly breakdown and precipitation probability
-- 📍 Multi-location bookmarking for quick weather comparison
-- 👕 Outfit recommendations based on weather conditions
+✨ **Current Weather Display**
+- Animated weather icons
+- Real-time temperature updates
+- Detailed conditions (humidity, wind, UV index)
 
-## Installation
+📅 **5-Day Forecast**
+- Daily high/low temperatures
+- Precipitation probability
+- Hourly breakdown for each day
+
+📍 **Multi-Location Support**
+- Bookmark favorite cities
+- Quick location switching
+- Compare weather across locations
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Weather API key (see [API Setup](#api-setup))
+
+### Installation
 
 ```bash
 # Clone the repository
@@ -18,38 +38,85 @@ cd weather-compass
 
 # Install dependencies
 npm install
-```
 
-## Usage
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API key
 
-```bash
 # Start development server
 npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
 ```
 
-## Environment Variables
+### API Setup
 
-Create a `.env` file in the root directory:
+1. Sign up for a free API key at [WeatherAPI.com](https://weatherapi.com)
+2. Copy your API key
+3. Add it to your `.env` file:
+   ```
+   VITE_WEATHER_API_KEY=your_api_key_here
+   ```
 
-```env
-VITE_WEATHER_API_KEY=your_openweathermap_api_key
+## Project Structure
+
+```
+weather-compass/
+├── src/
+│   ├── components/       # React components
+│   ├── context/          # React Context providers
+│   ├── hooks/            # Custom React hooks
+│   ├── services/         # API services
+│   ├── styles/           # Global styles & animations
+│   ├── types/            # TypeScript type definitions
+│   ├── utils/            # Utility functions
+│   └── App.tsx           # Root component
+├── docs/                 # Documentation
+│   ├── COMPONENTS.md     # Component documentation
+│   └── API.md            # API integration guide
+├── public/               # Static assets
+└── package.json
 ```
 
-Get your free API key from [OpenWeatherMap](https://openweathermap.org/api).
+## Documentation
+
+- [Component Guide](docs/COMPONENTS.md) - Detailed component documentation
+- [API Guide](docs/API.md) - API integration and data types
+
+## Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
+| `npm run type-check` | Run TypeScript compiler check |
 
 ## Tech Stack
 
-- React 18 + TypeScript
-- Vite
-- Tailwind CSS
-- OpenWeatherMap API
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **CSS3** - Styling with custom animations
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines before submitting a PR.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT
+MIT License - see [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+- Weather data provided by [WeatherAPI.com](https://weatherapi.com)
+- Icons inspired by [Weather Icons](https://erikflowers.github.io/weather-icons/)
+
+---
+
+Built with ☀️ and ❄️ by the Weather Compass team
